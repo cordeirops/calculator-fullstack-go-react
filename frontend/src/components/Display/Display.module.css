@@ -1,0 +1,39 @@
+.display {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 4rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--display-bg);
+  overflow: hidden;
+}
+
+.value {
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 8vw, 2.5rem);
+  font-weight: 500;
+  color: var(--text-h);
+  overflow-x: auto;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.spinner {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.75rem;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

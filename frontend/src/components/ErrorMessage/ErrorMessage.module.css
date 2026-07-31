@@ -1,0 +1,10 @@
+.error {
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  word-break: break-word;
+}

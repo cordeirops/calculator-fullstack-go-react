@@ -1,0 +1,59 @@
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.button {
+  min-height: 3rem;
+  border: none;
+  border-radius: 0.6rem;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    filter 0.1s ease,
+    transform 0.05s ease;
+  color: var(--text-h);
+  background: var(--key-bg);
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.digit {
+  background: var(--key-bg);
+}
+
+.operator {
+  background: var(--key-operator-bg);
+  color: var(--accent);
+}
+
+.equals {
+  grid-column: span 3;
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.function {
+  background: var(--key-function-bg);
+}
+
+@media (max-width: 420px) {
+  .button {
+    min-height: 2.75rem;
+    font-size: 0.95rem;
+  }
+}
