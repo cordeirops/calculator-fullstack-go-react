@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: Calculator API
+  description: >
+    REST API for a full-stack calculator challenge. Exposes basic and
+    advanced arithmetic operations through a single calculation endpoint.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags: [Health]
+      responses:
+        '200':
+          description: The service is up.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+
+  /calculate:
+    post:
+      summary: Perform an arithmetic operation
+      operationId: calculate
+      tags: [Calculator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateRequest'
+            examples:
+              add:
+                summary: Addition
+                value: { operation: add, operands: [2, 3] }
+              sqrt:
+                summary: Square root (unary)
+                value: { operation: sqrt, operands: [144] }
+              percentage:
+                summary: "50% of 200"
+                value: { operation: percentage, operands: [50, 200] }
+      responses:
+        '200':
+          description: Calculation succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculateResponse'
+              example:
+                operation: add
+                operands: [2, 3]
+                result: 5
+        '400':
+          description: >
+            Malformed request: invalid JSON, an unknown operation, or the
+            wrong number of operands for the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidJson:
+                  summary: Malformed JSON body
+                  value:
+                    error:
+                      code: INVALID_JSON
+                      message: request body must be a valid JSON object
+                invalidOperandCount:
+                  summary: Wrong number of operands
+                  value:
+                    error:
+                      code: INVALID_OPERAND_COUNT
+                      message: 'invalid operand count for operation: operation "add" requires 2 operands, got 1'
+                unknownOperation:
+                  summary: Unknown operation
+                  value:
+                    error:
+                      code: UNKNOWN_OPERATION
+                      message: 'unknown operation: "modulo"'
+        '422':
+          description: >
+            Semantically invalid request: the operation is well-formed but
+            cannot be evaluated (e.g. division by zero).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                divisionByZero:
+                  summary: Division by zero
+                  value:
+                    error:
+                      code: DIVISION_BY_ZERO
+                      message: cannot divide by zero
+                negativeSqrt:
+                  summary: Square root of a negative number
+                  value:
+                    error:
+                      code: NEGATIVE_SQRT_OPERAND
+                      message: cannot take square root of a negative number
+                resultOutOfRange:
+                  summary: Non-finite result (overflow)
+                  value:
+                    error:
+                      code: RESULT_OUT_OF_RANGE
+                      message: result is not a finite number
+
+components:
+  schemas:
+    Operation:
+      type: string
+      description: >
+        The arithmetic operation to perform. Binary operations (add,
+        subtract, multiply, divide, power, percentage) require exactly 2
+        operands; sqrt is unary and requires exactly 1.
+      enum:
+        - add
+        - subtract
+        - multiply
+        - divide
+        - power
+        - sqrt
+        - percentage
+
+    CalculateRequest:
+      type: object
+      required: [operation, operands]
+      properties:
+        operation:
+          $ref: '#/components/schemas/Operation'
+        operands:
+          type: array
+          items:
+            type: number
+            format: double
+          minItems: 1
+          maxItems: 2
+          description: >
+            2 operands for binary operations, 1 for sqrt. For percentage,
+            operands are [a, b] and the result is (a / 100) * b — "a
+            percent of b".
+
+    CalculateResponse:
+      type: object
+      properties:
+        operation:
+          $ref: '#/components/schemas/Operation'
+        operands:
+          type: array
+          items:
+            type: number
+            format: double
+        result:
+          type: number
+          format: double
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code.
+            message:
+              type: string
+              description: Human-readable error message.
