@@ -32,28 +32,30 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #14151a;
-    --card-bg: #1c1d24;
-    --border: #2e303a;
-    --accent: #a78bfa;
-    --accent-contrast: #14151a;
+/* Theme is decided by the inline script in index.html (before first
+   paint) and by useTheme.ts thereafter, both of which stamp this
+   attribute onto <html> — so this is the single source of truth for
+   dark mode, not prefers-color-scheme directly. */
+:root[data-theme='dark'] {
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #14151a;
+  --card-bg: #1c1d24;
+  --border: #2e303a;
+  --accent: #a78bfa;
+  --accent-contrast: #14151a;
 
-    --display-bg: #101116;
-    --key-bg: #24252d;
-    --key-operator-bg: #322a49;
-    --key-function-bg: #2a2b34;
-    --history-entry-bg: #101116;
+  --display-bg: #101116;
+  --key-bg: #24252d;
+  --key-operator-bg: #322a49;
+  --key-function-bg: #2a2b34;
+  --history-entry-bg: #101116;
 
-    --error-bg: #3a1717;
-    --error-text: #ffb4b4;
-    --error-border: #6b2a2a;
+  --error-bg: #3a1717;
+  --error-text: #ffb4b4;
+  --error-border: #6b2a2a;
 
-    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+  --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
 }
 
 *,

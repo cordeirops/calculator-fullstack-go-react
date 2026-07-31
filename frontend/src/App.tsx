@@ -1,9 +1,14 @@
+import styles from './App.module.css'
 import { Calculator } from './components/Calculator/Calculator'
+import { ThemeToggle } from './components/ThemeToggle/ThemeToggle'
 
 function App() {
   return (
     <main>
-      <h1>Calculator</h1>
+      <header className={styles.header}>
+        <h1>Calculator - Pedro S. Cordeiro</h1>
+        <ThemeToggle />
+      </header>
       <Calculator />
     </main>
   )
