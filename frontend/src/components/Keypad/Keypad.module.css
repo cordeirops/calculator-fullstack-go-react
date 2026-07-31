@@ -42,9 +42,12 @@
 }
 
 .equals {
-  grid-column: span 3;
   background: var(--accent);
   color: var(--accent-contrast);
+}
+
+.wide {
+  grid-column: span 2;
 }
 
 .function {

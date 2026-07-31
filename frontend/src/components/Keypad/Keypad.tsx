@@ -18,6 +18,7 @@ interface ButtonSpec {
   kind: 'digit' | 'operator' | 'equals' | 'function'
   testId: string
   title?: string
+  wide?: boolean
 }
 
 export function Keypad({
@@ -89,8 +90,9 @@ export function Keypad({
       onClick: () => onOperation('percentage'),
       kind: 'operator',
       testId: 'key-percentage',
+      wide: true,
     },
-    { label: '=', onClick: onEquals, kind: 'equals', testId: 'key-equals' },
+    { label: '=', onClick: onEquals, kind: 'equals', testId: 'key-equals', wide: true },
   ]
 
   return (
@@ -99,7 +101,7 @@ export function Keypad({
         <button
           key={button.testId}
           type="button"
-          className={`${styles.button} ${styles[button.kind]}`}
+          className={`${styles.button} ${styles[button.kind]} ${button.wide ? styles.wide : ''}`}
           onClick={button.onClick}
           disabled={disabled}
           data-testid={button.testId}
