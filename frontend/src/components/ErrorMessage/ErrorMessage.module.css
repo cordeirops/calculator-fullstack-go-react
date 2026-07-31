@@ -1,10 +1,33 @@
-.error {
-  padding: 0.6rem 0.9rem;
-  border-radius: 0.5rem;
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translate(-50%, 0.5rem);
+  max-width: min(90vw, 24rem);
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
   background: var(--error-bg);
   color: var(--error-text);
   border: 1px solid var(--error-border);
+  box-shadow: var(--shadow);
   font-size: 0.9rem;
   line-height: 1.35;
   word-break: break-word;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+  }
 }
