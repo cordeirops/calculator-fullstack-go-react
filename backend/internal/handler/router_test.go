@@ -75,7 +75,7 @@ func TestRouter_ConcurrentRequests(t *testing.T) {
 				errs[i] = err
 				return
 			}
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			var parsed calculateResponse
 			if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
