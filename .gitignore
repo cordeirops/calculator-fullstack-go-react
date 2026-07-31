@@ -1,0 +1,24 @@
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+frontend/coverage/
+*.local
+
+# Go / backend
+backend/bin/
+backend/coverage.out
+backend/coverage.html
+*.exe
+*.test
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+
+# Env
+.env
+.env.local
