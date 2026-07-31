@@ -18,7 +18,7 @@ interface ButtonSpec {
   kind: 'digit' | 'operator' | 'equals' | 'function'
   testId: string
   title?: string
-  wide?: boolean
+  gridColumn?: string
 }
 
 export function Keypad({
@@ -85,14 +85,23 @@ export function Keypad({
     { label: '.', onClick: () => onDigit('.'), kind: 'digit', testId: 'key-decimal' },
     { label: '+', onClick: () => onOperation('add'), kind: 'operator', testId: 'key-add' },
 
+    // The last row: "=" fills cols 1-3 (big, right below the digit pad),
+    // "%" is pinned to col 4 so it lines up with ÷ × − + ^ instead of
+    // sitting alone at col 1.
+    {
+      label: '=',
+      onClick: onEquals,
+      kind: 'equals',
+      testId: 'key-equals',
+      gridColumn: '1 / span 3',
+    },
     {
       label: '%',
       onClick: () => onOperation('percentage'),
       kind: 'operator',
       testId: 'key-percentage',
-      wide: true,
+      gridColumn: '4',
     },
-    { label: '=', onClick: onEquals, kind: 'equals', testId: 'key-equals', wide: true },
   ]
 
   return (
@@ -101,7 +110,8 @@ export function Keypad({
         <button
           key={button.testId}
           type="button"
-          className={`${styles.button} ${styles[button.kind]} ${button.wide ? styles.wide : ''}`}
+          className={`${styles.button} ${styles[button.kind]}`}
+          style={button.gridColumn ? { gridColumn: button.gridColumn } : undefined}
           onClick={button.onClick}
           disabled={disabled}
           data-testid={button.testId}
