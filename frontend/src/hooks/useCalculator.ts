@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { calculate } from '../services/calculatorApi'
 import {
   CalculatorApiError,
@@ -10,6 +10,7 @@ import {
 
 const MAX_DISPLAY_DIGITS = 15
 const MAX_HISTORY_ENTRIES = 20
+const HISTORY_STORAGE_KEY = 'calculator-history'
 const NETWORK_ERROR_MESSAGE =
   'Could not reach the calculator API. Check your connection and try again.'
 
@@ -23,14 +24,25 @@ interface CalculatorState {
   error: string | null
 }
 
-const initialState: CalculatorState = {
+// Fields that "C" resets. History is intentionally excluded: clearing the
+// current calculation should not wipe past results.
+const BLANK_CALCULATION_STATE: Omit<CalculatorState, 'history'> = {
   display: '0',
   storedValue: null,
   pendingOperation: null,
   overwrite: true,
-  history: [],
   isLoading: false,
   error: null,
+}
+
+function loadHistory(): HistoryEntry[] {
+  try {
+    const raw = window.localStorage.getItem(HISTORY_STORAGE_KEY)
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? (parsed as HistoryEntry[]) : []
+  } catch {
+    return []
+  }
 }
 
 function formatResult(value: number): string {
@@ -59,7 +71,14 @@ function negate(display: string): string {
 }
 
 export function useCalculator() {
-  const [state, setState] = useState<CalculatorState>(initialState)
+  const [state, setState] = useState<CalculatorState>(() => ({
+    ...BLANK_CALCULATION_STATE,
+    history: loadHistory(),
+  }))
+
+  useEffect(() => {
+    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(state.history))
+  }, [state.history])
 
   function inputDigit(digit: string) {
     setState((s) => ({
@@ -79,14 +98,15 @@ export function useCalculator() {
   }
 
   function toggleSign() {
-    setState((s) => ({
-      ...s,
-      display: negate(s.display),
-    }))
+    setState((s) => ({ ...s, display: negate(s.display) }))
   }
 
   function clear() {
-    setState(initialState)
+    setState((s) => ({ ...BLANK_CALCULATION_STATE, history: s.history }))
+  }
+
+  function clearHistory() {
+    setState((s) => ({ ...s, history: [] }))
   }
 
   async function runCalculation(operation: Operation, operands: number[]) {
@@ -136,6 +156,7 @@ export function useCalculator() {
     backspace,
     toggleSign,
     clear,
+    clearHistory,
     chooseOperation,
     equals,
     applyUnary,

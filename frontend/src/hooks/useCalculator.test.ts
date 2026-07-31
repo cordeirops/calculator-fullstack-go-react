@@ -14,6 +14,7 @@ const mockCalculate = vi.mocked(calculate)
 describe('useCalculator', () => {
   beforeEach(() => {
     mockCalculate.mockReset()
+    window.localStorage.clear()
   })
 
   it('starts with a zeroed display and empty history', () => {
@@ -164,8 +165,23 @@ describe('useCalculator', () => {
     expect(mockCalculate).not.toHaveBeenCalled()
   })
 
-  it('resets to the initial state on clear', () => {
+  it('resets the calculation but keeps history on clear', async () => {
+    mockCalculate.mockResolvedValueOnce({ operation: 'add', operands: [2, 3], result: 5 })
     const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('2')
+    })
+    act(() => {
+      result.current.chooseOperation('add')
+    })
+    act(() => {
+      result.current.inputDigit('3')
+    })
+    await act(async () => {
+      await result.current.equals()
+    })
+    await waitFor(() => expect(result.current.history).toHaveLength(1))
 
     act(() => {
       result.current.inputDigit('9')
@@ -175,5 +191,65 @@ describe('useCalculator', () => {
     })
 
     expect(result.current.display).toBe('0')
+    expect(result.current.history).toHaveLength(1)
+  })
+
+  it('loads history from localStorage on init', () => {
+    window.localStorage.setItem(
+      'calculator-history',
+      JSON.stringify([{ operation: 'add', operands: [1, 1], result: 2 }]),
+    )
+
+    const { result } = renderHook(() => useCalculator())
+
+    expect(result.current.history).toEqual([{ operation: 'add', operands: [1, 1], result: 2 }])
+  })
+
+  it('ignores corrupted localStorage history and starts empty', () => {
+    window.localStorage.setItem('calculator-history', 'not valid json')
+
+    const { result } = renderHook(() => useCalculator())
+
+    expect(result.current.history).toEqual([])
+  })
+
+  it('persists new history entries to localStorage', async () => {
+    mockCalculate.mockResolvedValueOnce({ operation: 'add', operands: [2, 3], result: 5 })
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('2')
+    })
+    act(() => {
+      result.current.chooseOperation('add')
+    })
+    act(() => {
+      result.current.inputDigit('3')
+    })
+    await act(async () => {
+      await result.current.equals()
+    })
+
+    await waitFor(() =>
+      expect(JSON.parse(window.localStorage.getItem('calculator-history') ?? '[]')).toEqual([
+        { operation: 'add', operands: [2, 3], result: 5 },
+      ]),
+    )
+  })
+
+  it('clears history via clearHistory and persists the empty list', async () => {
+    window.localStorage.setItem(
+      'calculator-history',
+      JSON.stringify([{ operation: 'add', operands: [1, 1], result: 2 }]),
+    )
+    const { result } = renderHook(() => useCalculator())
+    expect(result.current.history).toHaveLength(1)
+
+    act(() => {
+      result.current.clearHistory()
+    })
+
+    expect(result.current.history).toEqual([])
+    await waitFor(() => expect(window.localStorage.getItem('calculator-history')).toBe('[]'))
   })
 })

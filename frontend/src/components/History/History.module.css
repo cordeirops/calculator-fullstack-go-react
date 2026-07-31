@@ -2,6 +2,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .title {
@@ -11,6 +20,20 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0;
+}
+
+.clearButton {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  text-decoration: underline;
 }
 
 .empty {
@@ -27,7 +50,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  max-height: 9rem;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
