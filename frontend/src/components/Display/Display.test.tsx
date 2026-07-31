@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Display } from './Display'
 
 describe('Display', () => {
@@ -9,15 +10,73 @@ describe('Display', () => {
     expect(screen.getByTestId('display-value')).toHaveTextContent('42')
   })
 
-  it('does not show a loading spinner when not loading', () => {
-    render(<Display value="0" isLoading={false} />)
-
-    expect(screen.queryByTestId('display-spinner')).not.toBeInTheDocument()
-  })
-
-  it('shows a loading spinner while loading', () => {
+  it('shows a skeleton instead of the value while loading', () => {
     render(<Display value="0" isLoading={true} />)
 
-    expect(screen.getByTestId('display-spinner')).toBeInTheDocument()
+    expect(screen.getByTestId('display-skeleton')).toBeInTheDocument()
+    expect(screen.queryByTestId('display-value')).not.toBeInTheDocument()
+  })
+
+  it('does not show a skeleton when not loading', () => {
+    render(<Display value="0" isLoading={false} />)
+
+    expect(screen.queryByTestId('display-skeleton')).not.toBeInTheDocument()
+  })
+
+  describe('copy to clipboard', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('copies the value and shows a badge on click, which fades after a delay', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
+      render(<Display value="42" isLoading={false} />)
+
+      await user.click(screen.getByRole('button', { name: 'Copy result to clipboard' }))
+
+      expect(writeText).toHaveBeenCalledWith('42')
+      expect(screen.getByTestId('display-copied-badge')).toBeInTheDocument()
+
+      act(() => {
+        vi.advanceTimersByTime(1500)
+      })
+      expect(screen.queryByTestId('display-copied-badge')).not.toBeInTheDocument()
+    })
+
+    it('copies the value on Enter key press', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
+      render(<Display value="7" isLoading={false} />)
+
+      screen.getByRole('button', { name: 'Copy result to clipboard' }).focus()
+      await user.keyboard('{Enter}')
+
+      expect(writeText).toHaveBeenCalledWith('7')
+    })
+
+    it('does not copy while loading', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined)
+      render(<Display value="7" isLoading={true} />)
+
+      await user.click(screen.getByRole('button', { name: 'Copy result to clipboard' }))
+
+      expect(writeText).not.toHaveBeenCalled()
+    })
+
+    it('fails silently when the clipboard write rejects', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'))
+      render(<Display value="7" isLoading={false} />)
+
+      await user.click(screen.getByRole('button', { name: 'Copy result to clipboard' }))
+
+      expect(screen.queryByTestId('display-copied-badge')).not.toBeInTheDocument()
+    })
   })
 })

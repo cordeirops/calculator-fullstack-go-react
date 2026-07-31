@@ -7,7 +7,14 @@
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   background: var(--display-bg);
+  border: 1px solid var(--border);
   overflow: hidden;
+  cursor: pointer;
+}
+
+.display:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .value {
@@ -20,20 +27,39 @@
   max-width: 100%;
 }
 
-.spinner {
-  position: absolute;
-  top: 0.6rem;
-  left: 0.75rem;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+.skeleton {
+  width: 60%;
+  height: 1.75rem;
+  border-radius: 0.4rem;
+  background: linear-gradient(90deg, var(--key-bg) 25%, var(--border) 50%, var(--key-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
   }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.copiedBadge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--card-bg);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
 }
