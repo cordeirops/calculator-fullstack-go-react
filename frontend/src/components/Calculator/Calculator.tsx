@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCalculator } from '../../hooks/useCalculator'
 import type { BinaryOperation } from '../../types/calculator'
 import { Display } from '../Display/Display'
 import { ErrorMessage } from '../ErrorMessage/ErrorMessage'
-import { History } from '../History/History'
+import { HistoryPanel } from '../HistoryPanel/HistoryPanel'
 import { Keypad } from '../Keypad/Keypad'
 import styles from './Calculator.module.css'
 
@@ -60,6 +60,16 @@ function handleKeyDown(event: KeyboardEvent, actions: CalculatorActions) {
   }
 }
 
+function HistoryIcon() {
+  return (
+    <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+      <path d="M12 7v5l4 2" />
+    </svg>
+  )
+}
+
 export function Calculator() {
   const {
     display,
@@ -70,10 +80,13 @@ export function Calculator() {
     backspace,
     toggleSign,
     clear,
+    clearHistory,
     chooseOperation,
     equals,
     applyUnary,
   } = useCalculator()
+
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   const actionsRef = useRef<CalculatorActions | undefined>(undefined)
   actionsRef.current = {
@@ -86,8 +99,16 @@ export function Calculator() {
     applySqrt: () => void applyUnary('sqrt'),
   }
 
+  const isHistoryOpenRef = useRef(isHistoryOpen)
+  isHistoryOpenRef.current = isHistoryOpen
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isHistoryOpenRef.current) {
+        event.preventDefault()
+        setIsHistoryOpen(false)
+        return
+      }
       if (actionsRef.current) handleKeyDown(event, actionsRef.current)
     }
     window.addEventListener('keydown', onKeyDown)
@@ -95,20 +116,42 @@ export function Calculator() {
   }, [])
 
   return (
-    <div className={styles.card}>
-      <Display value={display} isLoading={isLoading} />
-      <ErrorMessage message={error} />
-      <Keypad
-        onDigit={inputDigit}
-        onOperation={chooseOperation}
-        onSqrt={() => void applyUnary('sqrt')}
-        onEquals={() => void equals()}
-        onClear={clear}
-        onBackspace={backspace}
-        onToggleSign={toggleSign}
-        disabled={isLoading}
+    <>
+      <div className={styles.card}>
+        <div className={styles.topRow}>
+          <button
+            type="button"
+            className={styles.historyToggle}
+            onClick={() => setIsHistoryOpen((open) => !open)}
+            aria-expanded={isHistoryOpen}
+            aria-controls="history-panel"
+            aria-label={isHistoryOpen ? 'Close history' : 'Open history'}
+            data-testid="history-toggle"
+          >
+            <HistoryIcon />
+          </button>
+        </div>
+
+        <Display value={display} isLoading={isLoading} />
+        <ErrorMessage message={error} />
+        <Keypad
+          onDigit={inputDigit}
+          onOperation={chooseOperation}
+          onSqrt={() => void applyUnary('sqrt')}
+          onEquals={() => void equals()}
+          onClear={clear}
+          onBackspace={backspace}
+          onToggleSign={toggleSign}
+          disabled={isLoading}
+        />
+      </div>
+
+      <HistoryPanel
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        entries={history}
+        onClear={clearHistory}
       />
-      <History entries={history} />
-    </div>
+    </>
   )
 }
