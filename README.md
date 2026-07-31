@@ -3,7 +3,8 @@
 A full-stack calculator: a React + TypeScript SPA talking to a Go REST API.
 Basic and advanced arithmetic (add, subtract, multiply, divide, power,
 square root, percentage), strict input validation, a keyboard-accessible
-UI with in-memory calculation history, and Docker support.
+UI with a light/dark theme toggle and a persisted calculation history,
+and Docker support.
 
 ## Table of contents
 
@@ -331,9 +332,10 @@ flowchart TD
   `power(10, 1000)` or `power(-8, 0.5)`) is treated as a `422` semantic
   error** (`RESULT_OUT_OF_RANGE`), since `encoding/json` cannot serialize
   `Inf`/`NaN` and silently returning `0` would be misleading.
-- **History is in-memory only**, capped at the last 20 calculations, and
-  is not persisted across a page reload — the brief only asked for a
-  list of recent operations, not durable storage.
+- **History is capped at the last 20 calculations** and persisted to
+  `localStorage` (not a backend store) — it survives a page reload but
+  is local to the browser, which is enough for "a list of recent
+  operations" without standing up durable server-side storage.
 - **CORS is origin-restricted, not wildcarded** (`CORS_ALLOWED_ORIGIN`,
   defaulting to the Vite dev server's origin), since this is a two-origin
   local setup rather than a public API.
@@ -426,8 +428,9 @@ justification beyond O(1) is needed.
     go.mod
   /frontend
     /src
-      /components          Calculator, Display, Keypad, ErrorMessage, History
-      /hooks               useCalculator (all calculator UI state)
+      /components          Calculator, Display, Keypad, ErrorMessage, History,
+                           HistoryPanel, ThemeToggle
+      /hooks               useCalculator (calculator UI state), useTheme
       /services            calculatorApi.ts (the only module that calls fetch)
       /types               shared TS types
       /utils               formatExpression (history display formatting)

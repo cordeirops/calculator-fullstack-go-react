@@ -161,3 +161,61 @@ improvement suggestions.
 
 A written list of further improvement suggestions (not implemented,
 pending decision) was also provided in that conversation.
+
+## 12. Implementing the suggested improvements, plus further layout iteration
+
+**Prompt:** Asked to implement all of the previously suggested
+improvements (history clear button, copy-to-clipboard, error toast,
+persisted history, loading skeleton, custom favicon), and separately
+asked for a text prompt to hand to an image-generation tool for a
+custom favicon (not generated here — no image-generation capability).
+
+**What was produced:**
+
+- `useCalculator`: `clearHistory` action; history now loads from and
+  persists to `localStorage` (capped at 20 entries), while "C" only
+  resets the current calculation, not history.
+- `Display`: click-or-Enter/Space copies the result via the Clipboard
+  API with a "Copied!" badge; a shimmering skeleton replaces the value
+  while loading instead of a small corner spinner.
+- `ErrorMessage`: rebuilt as a fixed-position, auto-dismissing toast
+  (4s, with a fade transition) instead of a banner permanently taking
+  up vertical space in the card.
+- `History`: a "Clear" button, shown only when there are entries.
+
+**Follow-up prompt (mid-turn):** Move history to a right-side panel
+with an open/close toggle instead of always showing below the keypad;
+move "=" to a big button below the numbers instead of splitting the
+last row with "%", and put "%" back in the operator column.
+
+**What was produced:** New `HistoryPanel` component (slide-in drawer,
+right edge, toggled from the calculator card, closes on Escape before
+the calculator's own Escape-clears-display handling kicks in). Keypad
+restructured so "%" is pinned to the same grid column as ÷ × − + ^
+instead of sitting alone, and "=" became a large button below the
+digit grid.
+
+**Follow-up prompt:** Opening history must not block interaction with
+the calculator; in the light theme the "screens" need a visible
+border/contour, same as in dark.
+
+**What was produced:** Removed the drawer's backdrop entirely (it was
+a full-viewport click-catcher) and added an explicit close button
+inside the panel instead — the calculator stays fully usable while the
+panel is open. Gave the display an explicit `border: 1px solid
+var(--border)` so it has a visible outline in both themes (previously
+relying only on background-color contrast, which wasn't enough in
+light mode).
+
+**Follow-up prompt:** Put "=" immediately to the left of "%" instead of
+spanning the full width below everything, still below the digits.
+
+**What was produced:** "=" moved back into the keypad grid, filling
+columns 1-3 of the last row (still big/wide), with "%" in column 4
+directly to its right — same row, right below the digit pad.
+
+Also dropped `restart: unless-stopped` from `docker-compose.yml`: it
+kept auto-reviving the containers after Docker Desktop/WSL restarts,
+silently occupying the same ports the local (non-Docker) dev servers
+use, which repeatedly got in the way of manual browser verification
+during this session.
