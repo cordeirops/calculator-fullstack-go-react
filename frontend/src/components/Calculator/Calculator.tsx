@@ -126,6 +126,7 @@ export function Calculator() {
             aria-expanded={isHistoryOpen}
             aria-controls="history-panel"
             aria-label={isHistoryOpen ? 'Close history' : 'Open history'}
+            title={isHistoryOpen ? 'Close history' : 'Open history'}
             data-testid="history-toggle"
           >
             <HistoryIcon />

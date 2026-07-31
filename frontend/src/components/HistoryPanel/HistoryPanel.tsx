@@ -26,6 +26,7 @@ export function HistoryPanel({ isOpen, onClose, entries, onClear }: HistoryPanel
         className={styles.close}
         onClick={onClose}
         aria-label="Close history"
+        title="Close history"
         data-testid="history-close"
       >
         ×

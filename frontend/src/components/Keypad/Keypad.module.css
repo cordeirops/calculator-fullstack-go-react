@@ -6,7 +6,7 @@
 
 .button {
   min-height: 3rem;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 0.6rem;
   font-family: var(--mono);
   font-size: 1.05rem;

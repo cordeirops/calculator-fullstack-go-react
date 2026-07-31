@@ -32,7 +32,7 @@ export function Keypad({
   disabled,
 }: KeypadProps) {
   const buttons: ButtonSpec[] = [
-    { label: 'C', onClick: onClear, kind: 'function', testId: 'key-clear' },
+    { label: 'C', onClick: onClear, kind: 'function', testId: 'key-clear', title: 'Clear' },
     {
       label: '⌫',
       onClick: onBackspace,
@@ -52,7 +52,13 @@ export function Keypad({
     { label: '7', onClick: () => onDigit('7'), kind: 'digit', testId: 'key-7' },
     { label: '8', onClick: () => onDigit('8'), kind: 'digit', testId: 'key-8' },
     { label: '9', onClick: () => onDigit('9'), kind: 'digit', testId: 'key-9' },
-    { label: '÷', onClick: () => onOperation('divide'), kind: 'operator', testId: 'key-divide' },
+    {
+      label: '÷',
+      onClick: () => onOperation('divide'),
+      kind: 'operator',
+      testId: 'key-divide',
+      title: 'Divide',
+    },
 
     { label: '4', onClick: () => onDigit('4'), kind: 'digit', testId: 'key-4' },
     { label: '5', onClick: () => onDigit('5'), kind: 'digit', testId: 'key-5' },
@@ -62,6 +68,7 @@ export function Keypad({
       onClick: () => onOperation('multiply'),
       kind: 'operator',
       testId: 'key-multiply',
+      title: 'Multiply',
     },
 
     { label: '1', onClick: () => onDigit('1'), kind: 'digit', testId: 'key-1' },
@@ -72,6 +79,7 @@ export function Keypad({
       onClick: () => onOperation('subtract'),
       kind: 'operator',
       testId: 'key-subtract',
+      title: 'Subtract',
     },
 
     {
@@ -83,7 +91,13 @@ export function Keypad({
     },
     { label: '0', onClick: () => onDigit('0'), kind: 'digit', testId: 'key-0' },
     { label: '.', onClick: () => onDigit('.'), kind: 'digit', testId: 'key-decimal' },
-    { label: '+', onClick: () => onOperation('add'), kind: 'operator', testId: 'key-add' },
+    {
+      label: '+',
+      onClick: () => onOperation('add'),
+      kind: 'operator',
+      testId: 'key-add',
+      title: 'Add',
+    },
 
     // The last row: "=" fills cols 1-3 (big, right below the digit pad),
     // "%" is pinned to col 4 so it lines up with ÷ × − + ^ instead of
@@ -94,6 +108,7 @@ export function Keypad({
       kind: 'equals',
       testId: 'key-equals',
       gridColumn: '1 / span 3',
+      title: 'Calculate result',
     },
     {
       label: '%',
@@ -101,6 +116,7 @@ export function Keypad({
       kind: 'operator',
       testId: 'key-percentage',
       gridColumn: '4',
+      title: 'Percentage',
     },
   ]
 
