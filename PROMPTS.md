@@ -136,3 +136,28 @@ an error branch, use-case) with consistent, professional styling and
 English-only labels — plus keep this file up to date.
 
 **What was produced:** `README.md`, `openapi.yaml`, and this file.
+
+## 11. Post-review UI fixes
+
+**Prompt:** After reviewing the running app, three fixes were requested:
+add a light/dark theme switch, fix the `%` key which looked visually
+disconnected from the rest of the keypad grid, and change the page
+title/heading to "Calculator - Pedro S. Cordeiro". Also asked for
+improvement suggestions.
+
+**What was produced:**
+
+- `useTheme` + `ThemeToggle`: a manual toggle on top of the existing
+  `prefers-color-scheme` support, persisted to `localStorage` and
+  applied via a `data-theme` attribute (with an inline
+  before-first-paint script in `index.html` to avoid a theme flash on
+  load).
+- The keypad's last row previously had `%` in one normal-width cell
+  next to `=` spanning 3 columns, which read as `%` being orphaned.
+  Both keys now span 2 columns each, so the row is two equal-width
+  buttons.
+- Page `<title>` and the on-screen `<h1>` both updated to "Calculator -
+  Pedro S. Cordeiro", moved into a header row alongside the new toggle.
+
+A written list of further improvement suggestions (not implemented,
+pending decision) was also provided in that conversation.
