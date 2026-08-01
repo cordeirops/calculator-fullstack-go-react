@@ -55,11 +55,18 @@ describe('Keypad', () => {
     expect(props.onOperation).toHaveBeenCalledWith(operation)
   })
 
-  it('places = in cols 1-3 and % in col 4 of the last row, so = sits directly left of %', () => {
+  it('places = in cols 1-3 and ^ in col 4 of the last row, so = sits directly left of ^', () => {
     renderKeypad()
 
     expect(screen.getByTestId('key-equals')).toHaveStyle({ gridColumn: '1 / span 3' })
-    expect(screen.getByTestId('key-percentage')).toHaveStyle({ gridColumn: '4' })
+    expect(screen.getByTestId('key-power')).toHaveStyle({ gridColumn: '4' })
+  })
+
+  it('places % in the top utility row, alongside C, backspace and sqrt', () => {
+    renderKeypad()
+
+    const utilityRow = ['key-clear', 'key-backspace', 'key-sqrt', 'key-percentage']
+    utilityRow.forEach((testId) => expect(screen.getByTestId(testId)).toBeInTheDocument())
   })
 
   it('calls onSqrt, onEquals, onClear, onBackspace and onToggleSign', async () => {

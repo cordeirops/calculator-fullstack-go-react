@@ -42,11 +42,11 @@ export function Keypad({
     },
     { label: '√', onClick: onSqrt, kind: 'operator', testId: 'key-sqrt', title: 'Square root' },
     {
-      label: '^',
-      onClick: () => onOperation('power'),
+      label: '%',
+      onClick: () => onOperation('percentage'),
       kind: 'operator',
-      testId: 'key-power',
-      title: 'Power',
+      testId: 'key-percentage',
+      title: 'Percentage',
     },
 
     { label: '7', onClick: () => onDigit('7'), kind: 'digit', testId: 'key-7' },
@@ -100,7 +100,7 @@ export function Keypad({
     },
 
     // The last row: "=" fills cols 1-3 (big, right below the digit pad),
-    // "%" is pinned to col 4 so it lines up with ÷ × − + ^ instead of
+    // "^" is pinned to col 4 so it lines up with √ ÷ × − + instead of
     // sitting alone at col 1.
     {
       label: '=',
@@ -111,12 +111,12 @@ export function Keypad({
       title: 'Calculate result',
     },
     {
-      label: '%',
-      onClick: () => onOperation('percentage'),
+      label: '^',
+      onClick: () => onOperation('power'),
       kind: 'operator',
-      testId: 'key-percentage',
+      testId: 'key-power',
       gridColumn: '4',
-      title: 'Percentage',
+      title: 'Power',
     },
   ]
 
