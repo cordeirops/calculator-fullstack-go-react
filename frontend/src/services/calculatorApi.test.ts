@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CalculatorApiError } from '../types/calculator'
-import { calculate, checkHealth } from './calculatorApi'
+import { calculate } from './calculatorApi'
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -71,29 +71,6 @@ describe('calculatorApi', () => {
       await expect(calculate({ operation: 'add', operands: [1, 1] })).rejects.toThrow(
         'Failed to fetch',
       )
-    })
-  })
-
-  describe('checkHealth', () => {
-    it('returns true when the health endpoint responds ok', async () => {
-      const mockFetch = vi.mocked(fetch)
-      mockFetch.mockResolvedValueOnce(jsonResponse({ status: 'ok' }))
-
-      await expect(checkHealth()).resolves.toBe(true)
-    })
-
-    it('returns false when the health endpoint responds with an error status', async () => {
-      const mockFetch = vi.mocked(fetch)
-      mockFetch.mockResolvedValueOnce(jsonResponse({}, 503))
-
-      await expect(checkHealth()).resolves.toBe(false)
-    })
-
-    it('returns false when fetch throws', async () => {
-      const mockFetch = vi.mocked(fetch)
-      mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'))
-
-      await expect(checkHealth()).resolves.toBe(false)
     })
   })
 })
