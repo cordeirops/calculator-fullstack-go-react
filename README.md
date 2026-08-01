@@ -3,8 +3,10 @@
 A full-stack calculator: a React + TypeScript SPA talking to a Go REST API.
 Basic and advanced arithmetic (add, subtract, multiply, divide, power,
 square root, percentage), strict input validation, a keyboard-accessible
-UI with a light/dark theme toggle and a persisted calculation history,
-and Docker support.
+UI with a light/dark theme toggle, Windows-Calculator-style operator
+chaining (`5 × 3 +` evaluates `5 × 3` immediately, each step a real API
+call), and a non-blocking, persisted calculation history panel. Deployable
+via Docker Compose or Vercel.
 
 ## Table of contents
 
@@ -12,6 +14,7 @@ and Docker support.
 - [Getting started](#getting-started)
   - [Without Docker](#without-docker)
   - [With Docker](#with-docker)
+- [Deployment (Vercel)](#deployment-vercel)
 - [API](#api)
 - [Sequence: a calculation request](#sequence-a-calculation-request)
 - [Use cases](#use-cases)
@@ -88,6 +91,27 @@ This builds and starts both services:
 - Frontend at `http://localhost:5173`
 
 Stop with `docker compose down`.
+
+## Deployment (Vercel)
+
+The live deployment splits the monorepo into two separate Vercel
+projects pointed at the same GitHub repo, unified under one custom
+domain:
+
+- **Backend** — Root Directory `backend`. Vercel's Go builder runs
+  `cmd/server` directly (a plain `net/http.ListenAndServe` server, no
+  serverless-function adapter needed). Set `CORS_ALLOWED_ORIGIN` to the
+  frontend's deployed origin.
+- **Frontend** — Root Directory `frontend`, framework preset Vite.
+  `frontend/vercel.json` rewrites `/api/*` to the backend's Vercel URL,
+  so the browser only ever talks to the frontend's own origin — the
+  request becomes same-origin and CORS never enters the picture for the
+  live domain. Set `VITE_API_BASE_URL` to `/api/v1` (relative, not the
+  backend's full URL) so this rewrite is what's actually used in
+  production.
+
+Both env vars are build/runtime configuration only — no code changes
+are needed to move between local, Docker, and Vercel.
 
 ## API
 
@@ -228,7 +252,7 @@ sequenceDiagram
         Handler-->>Api: 422, {error: DIVISION_BY_ZERO}
         Api-->>Hook: throw CalculatorApiError
         Hook-->>UI: set error message
-        UI-->>User: show inline error banner
+        UI-->>User: show auto-dismissing error toast
     end
 ```
 
@@ -319,6 +343,17 @@ flowchart TD
   pending operation, loading, error, history) is small enough that a
   `useState`-based hook with a handful of named functions stays easy to
   read, and it's what the tests exercise directly with `renderHook`.
+- **Operator chaining reuses the same single-operation endpoint** instead
+  of adding a batch/expression endpoint or evaluating expressions
+  client-side. Pressing an operator while one is already pending (e.g.
+  the `+` in `5 × 3 +`) just triggers the same `POST /calculate` the
+  "=" key would, immediately, using the result as the next operand —
+  so multi-step calculations still never do arithmetic outside the
+  backend, without touching the API contract at all.
+- **The history panel has no backdrop by design.** It's a
+  non-modal slide-in drawer (`HistoryPanel`): opening it never blocks
+  interacting with the calculator underneath, unlike a typical
+  modal-with-overlay pattern.
 
 ## Assumptions
 
