@@ -140,8 +140,12 @@ export function useCalculator() {
   // typing a new operand evaluates the pending operation immediately
   // (a real API call, same as pressing "="), then starts the next one from
   // that result — so "5 × 3 +" already shows 15 before "2 =" adds to it.
-  // Pressing an operator again with no new digits typed just swaps it.
+  // Pressing an operator again with no new digits typed just swaps it,
+  // keeping the existing storedValue rather than resampling the display
+  // (which may have been mutated since, e.g. by toggleSign).
   async function chooseOperation(operation: BinaryOperation) {
+    if (state.isLoading) return
+
     if (state.storedValue !== null && state.pendingOperation !== null && !state.overwrite) {
       const result = await runCalculation(state.pendingOperation, [
         state.storedValue,
@@ -153,7 +157,7 @@ export function useCalculator() {
     }
     setState((s) => ({
       ...s,
-      storedValue: Number(s.display),
+      storedValue: s.storedValue === null ? Number(s.display) : s.storedValue,
       pendingOperation: operation,
       overwrite: true,
     }))
@@ -171,7 +175,7 @@ export function useCalculator() {
 
   const expressionPreview =
     state.storedValue !== null && state.pendingOperation !== null
-      ? `${state.storedValue} ${OPERATION_SYMBOLS[state.pendingOperation] ?? state.pendingOperation}`
+      ? `${state.storedValue} ${OPERATION_SYMBOLS[state.pendingOperation]}`
       : null
 
   return {

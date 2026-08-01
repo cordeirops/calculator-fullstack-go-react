@@ -1,6 +1,6 @@
-import type { HistoryEntry } from '../types/calculator'
+import type { BinaryOperation, HistoryEntry } from '../types/calculator'
 
-export const OPERATION_SYMBOLS: Record<string, string> = {
+export const OPERATION_SYMBOLS: Record<BinaryOperation, string> = {
   add: '+',
   subtract: '−',
   multiply: '×',

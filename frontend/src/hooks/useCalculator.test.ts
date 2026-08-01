@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { CalculatorApiError } from '../types/calculator'
+import { CalculatorApiError, type CalculateResponse } from '../types/calculator'
 import { useCalculator } from './useCalculator'
 
 vi.mock('../services/calculatorApi', () => ({
@@ -346,5 +346,71 @@ describe('useCalculator', () => {
     // The original pending operation is left intact (not silently
     // discarded) so the user can correct the operand and retry.
     expect(result.current.expressionPreview).toBe('5 ÷')
+  })
+
+  it('keeps the original storedValue when an operator is re-pressed after the display changes without a new digit', () => {
+    // Regression test: pressing an operator used to always resample the
+    // display as the new storedValue, even when one was already pending.
+    // Toggling the sign in between (or any other display-only mutation)
+    // would silently corrupt the operand a subsequent operator press used,
+    // even though no new digit was ever typed for the second operand.
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('add')
+    })
+    act(() => {
+      result.current.toggleSign()
+    })
+    act(() => {
+      result.current.chooseOperation('multiply')
+    })
+
+    expect(result.current.expressionPreview).toBe('5 ×')
+  })
+
+  it('ignores chooseOperation while a calculation is already in flight', async () => {
+    let resolveCalculate!: (value: CalculateResponse) => void
+    mockCalculate.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveCalculate = resolve
+      }),
+    )
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('multiply')
+    })
+    act(() => {
+      result.current.inputDigit('3')
+    })
+
+    // Kick off the chained call (multiply 5*3) but don't await it yet, so
+    // isLoading is true while we try to sneak in another operator press —
+    // simulating a keyboard shortcut firing while the Keypad is disabled.
+    let chainPromise!: Promise<void>
+    act(() => {
+      chainPromise = result.current.chooseOperation('add')
+    })
+    expect(result.current.isLoading).toBe(true)
+
+    await act(async () => {
+      await result.current.chooseOperation('subtract')
+    })
+
+    expect(mockCalculate).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveCalculate({ operation: 'multiply', operands: [5, 3], result: 15 })
+      await chainPromise
+    })
+
+    expect(result.current.display).toBe('15')
   })
 })
