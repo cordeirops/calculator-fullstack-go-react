@@ -252,4 +252,99 @@ describe('useCalculator', () => {
     expect(result.current.history).toEqual([])
     await waitFor(() => expect(window.localStorage.getItem('calculator-history')).toBe('[]'))
   })
+
+  it('exposes a null expressionPreview until an operation is pending', () => {
+    const { result } = renderHook(() => useCalculator())
+
+    expect(result.current.expressionPreview).toBeNull()
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('add')
+    })
+
+    expect(result.current.expressionPreview).toBe('5 +')
+  })
+
+  it('chains: pressing an operator after typing a new operand evaluates the pending one first', async () => {
+    mockCalculate.mockResolvedValueOnce({ operation: 'multiply', operands: [5, 3], result: 15 })
+    mockCalculate.mockResolvedValueOnce({ operation: 'add', operands: [15, 2], result: 17 })
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('multiply')
+    })
+    act(() => {
+      result.current.inputDigit('3')
+    })
+
+    await act(async () => {
+      await result.current.chooseOperation('add')
+    })
+
+    expect(mockCalculate).toHaveBeenNthCalledWith(1, { operation: 'multiply', operands: [5, 3] })
+    expect(result.current.display).toBe('15')
+    expect(result.current.expressionPreview).toBe('15 +')
+    expect(result.current.history).toEqual([
+      { operation: 'multiply', operands: [5, 3], result: 15 },
+    ])
+
+    act(() => {
+      result.current.inputDigit('2')
+    })
+    await act(async () => {
+      await result.current.equals()
+    })
+
+    expect(mockCalculate).toHaveBeenNthCalledWith(2, { operation: 'add', operands: [15, 2] })
+    expect(result.current.display).toBe('17')
+  })
+
+  it('does not chain (no API call) when switching operators without typing a new operand', () => {
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('add')
+    })
+    act(() => {
+      result.current.chooseOperation('multiply')
+    })
+
+    expect(mockCalculate).not.toHaveBeenCalled()
+    expect(result.current.expressionPreview).toBe('5 ×')
+  })
+
+  it('stops the chain and surfaces the error if the intermediate calculation fails', async () => {
+    mockCalculate.mockRejectedValueOnce(
+      new CalculatorApiError('DIVISION_BY_ZERO', 'cannot divide by zero', 422),
+    )
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('divide')
+    })
+    act(() => {
+      result.current.inputDigit('0')
+    })
+
+    await act(async () => {
+      await result.current.chooseOperation('add')
+    })
+
+    expect(result.current.error).toBe('cannot divide by zero')
+    // The original pending operation is left intact (not silently
+    // discarded) so the user can correct the operand and retry.
+    expect(result.current.expressionPreview).toBe('5 ÷')
+  })
 })

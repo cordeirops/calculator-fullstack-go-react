@@ -4,11 +4,12 @@ import styles from './Display.module.css'
 interface DisplayProps {
   value: string
   isLoading: boolean
+  expression: string | null
 }
 
 const COPIED_FEEDBACK_MS = 1500
 
-export function Display({ value, isLoading }: DisplayProps) {
+export function Display({ value, isLoading, expression }: DisplayProps) {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -43,18 +44,24 @@ export function Display({ value, isLoading }: DisplayProps) {
       onKeyDown={handleKeyDown}
       aria-label="Copy result to clipboard"
     >
-      {isLoading ? (
-        <span className={styles.skeleton} data-testid="display-skeleton" aria-hidden="true" />
-      ) : (
-        <span className={styles.value} data-testid="display-value" aria-live="polite">
-          {value}
-        </span>
-      )}
-      {copied && (
-        <span className={styles.copiedBadge} data-testid="display-copied-badge">
-          Copied!
-        </span>
-      )}
+      {/* Reserves a stable line height whether or not a pending operation exists, so the value below doesn't jump. */}
+      <span className={styles.expression} data-testid="display-expression">
+        {expression ?? ' '}
+      </span>
+      <div className={styles.valueRow}>
+        {isLoading ? (
+          <span className={styles.skeleton} data-testid="display-skeleton" aria-hidden="true" />
+        ) : (
+          <span className={styles.value} data-testid="display-value" aria-live="polite">
+            {value}
+          </span>
+        )}
+        {copied && (
+          <span className={styles.copiedBadge} data-testid="display-copied-badge">
+            Copied!
+          </span>
+        )}
+      </div>
     </div>
   )
 }

@@ -1,11 +1,12 @@
 import type { HistoryEntry } from '../types/calculator'
 
-const OPERATION_SYMBOLS: Record<string, string> = {
+export const OPERATION_SYMBOLS: Record<string, string> = {
   add: '+',
   subtract: '−',
   multiply: '×',
   divide: '÷',
   power: '^',
+  percentage: '%',
 }
 
 // formatExpression renders a HistoryEntry as a short human-readable

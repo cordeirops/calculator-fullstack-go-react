@@ -7,6 +7,7 @@ import {
   type Operation,
   type UnaryOperation,
 } from '../types/calculator'
+import { OPERATION_SYMBOLS } from '../utils/formatExpression'
 
 const MAX_DISPLAY_DIGITS = 15
 const MAX_HISTORY_ENTRIES = 20
@@ -109,7 +110,9 @@ export function useCalculator() {
     setState((s) => ({ ...s, history: [] }))
   }
 
-  async function runCalculation(operation: Operation, operands: number[]) {
+  // Returns the computed result on success, or null if the request failed
+  // (state.error is already set in that case).
+  async function runCalculation(operation: Operation, operands: number[]): Promise<number | null> {
     setState((s) => ({ ...s, isLoading: true, error: null }))
     try {
       const response = await calculate({ operation, operands })
@@ -125,13 +128,29 @@ export function useCalculator() {
           MAX_HISTORY_ENTRIES,
         ),
       }))
+      return response.result
     } catch (err) {
       const message = err instanceof CalculatorApiError ? err.message : NETWORK_ERROR_MESSAGE
       setState((s) => ({ ...s, isLoading: false, error: message, overwrite: true }))
+      return null
     }
   }
 
-  function chooseOperation(operation: BinaryOperation) {
+  // Windows-Calculator-style chaining: pressing an operator right after
+  // typing a new operand evaluates the pending operation immediately
+  // (a real API call, same as pressing "="), then starts the next one from
+  // that result — so "5 × 3 +" already shows 15 before "2 =" adds to it.
+  // Pressing an operator again with no new digits typed just swaps it.
+  async function chooseOperation(operation: BinaryOperation) {
+    if (state.storedValue !== null && state.pendingOperation !== null && !state.overwrite) {
+      const result = await runCalculation(state.pendingOperation, [
+        state.storedValue,
+        Number(state.display),
+      ])
+      if (result === null) return
+      setState((s) => ({ ...s, storedValue: result, pendingOperation: operation, overwrite: true }))
+      return
+    }
     setState((s) => ({
       ...s,
       storedValue: Number(s.display),
@@ -150,8 +169,14 @@ export function useCalculator() {
     await runCalculation(operation, [Number(state.display)])
   }
 
+  const expressionPreview =
+    state.storedValue !== null && state.pendingOperation !== null
+      ? `${state.storedValue} ${OPERATION_SYMBOLS[state.pendingOperation] ?? state.pendingOperation}`
+      : null
+
   return {
     ...state,
+    expressionPreview,
     inputDigit,
     backspace,
     toggleSign,

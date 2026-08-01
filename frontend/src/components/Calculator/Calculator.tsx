@@ -73,6 +73,7 @@ function HistoryIcon() {
 export function Calculator() {
   const {
     display,
+    expressionPreview,
     isLoading,
     error,
     history,
@@ -94,7 +95,7 @@ export function Calculator() {
     backspace,
     toggleSign,
     clear,
-    chooseOperation,
+    chooseOperation: (operation) => void chooseOperation(operation),
     equals: () => void equals(),
     applySqrt: () => void applyUnary('sqrt'),
   }
@@ -133,11 +134,11 @@ export function Calculator() {
           </button>
         </div>
 
-        <Display value={display} isLoading={isLoading} />
+        <Display value={display} isLoading={isLoading} expression={expressionPreview} />
         <ErrorMessage message={error} />
         <Keypad
           onDigit={inputDigit}
-          onOperation={chooseOperation}
+          onOperation={(operation) => void chooseOperation(operation)}
           onSqrt={() => void applyUnary('sqrt')}
           onEquals={() => void equals()}
           onClear={clear}
