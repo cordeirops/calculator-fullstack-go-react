@@ -65,8 +65,14 @@ describe('Keypad', () => {
   it('places % in the top utility row, alongside C, backspace and sqrt', () => {
     renderKeypad()
 
-    const utilityRow = ['key-clear', 'key-backspace', 'key-sqrt', 'key-percentage']
-    utilityRow.forEach((testId) => expect(screen.getByTestId(testId)).toBeInTheDocument())
+    // The grid has no explicit row/column placement for these four, so DOM
+    // order *is* visual order (first 4 cells = row 1). Checking the actual
+    // sequence, not just presence, is what proves % really moved up top.
+    const firstRow = screen
+      .getAllByRole('button')
+      .slice(0, 4)
+      .map((button) => button.dataset.testid)
+    expect(firstRow).toEqual(['key-clear', 'key-backspace', 'key-sqrt', 'key-percentage'])
   })
 
   it('calls onSqrt, onEquals, onClear, onBackspace and onToggleSign', async () => {
