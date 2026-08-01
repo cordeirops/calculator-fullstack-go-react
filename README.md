@@ -94,6 +94,8 @@ Stop with `docker compose down`.
 
 ## Deployment (Vercel)
 
+Live at **[cordeirops.xyz](https://cordeirops.xyz)**.
+
 The live deployment splits the monorepo into two separate Vercel
 projects pointed at the same GitHub repo, unified under one custom
 domain:
