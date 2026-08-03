@@ -356,6 +356,16 @@ flowchart TD
   non-modal slide-in drawer (`HistoryPanel`): opening it never blocks
   interacting with the calculator underneath, unlike a typical
   modal-with-overlay pattern.
+- **The keypad only exposes x² (squaring), not arbitrary exponentiation**,
+  matching a standard calculator's UI (Windows Calculator, etc). The
+  `power` API operation itself is unchanged and fully general — `x²`
+  just always calls it with `operands: [x, 2]`. Choosing an arbitrary
+  exponent is still possible directly against the API.
+- **Displayed numbers use thousands separators and readable scientific
+  notation** (`formatNumber`, shared by the live display and the
+  history list) instead of JavaScript's raw `Number#toString()`, which
+  outputs ugly `e+27` syntax outside `[1e-6, 1e21)` and no grouping at
+  all for large integers.
 
 ## Assumptions
 
@@ -470,7 +480,7 @@ justification beyond O(1) is needed.
       /hooks               useCalculator (calculator UI state), useTheme
       /services            calculatorApi.ts (the only module that calls fetch)
       /types               shared TS types
-      /utils               formatExpression (history display formatting)
+      /utils               formatExpression (history display), formatNumber (shared display formatting)
     package.json
   openapi.yaml
   docker-compose.yml
