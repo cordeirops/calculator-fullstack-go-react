@@ -116,6 +116,57 @@ describe('useCalculator', () => {
     expect(result.current.isLoading).toBe(false)
   })
 
+  it('formats a very large result as readable scientific notation instead of raw "e+" syntax', async () => {
+    // 23123123123123 * 123123123123123, computed exactly as float64 would.
+    mockCalculate.mockResolvedValueOnce({
+      operation: 'multiply',
+      operands: [23123123123123, 123123123123123],
+      result: 2.8469911352794057e27,
+    })
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('5')
+    })
+    act(() => {
+      result.current.chooseOperation('multiply')
+    })
+    act(() => {
+      result.current.inputDigit('3')
+    })
+    await act(async () => {
+      await result.current.equals()
+    })
+
+    expect(result.current.display).toBe('2.846991135 × 10^27')
+    expect(result.current.display).not.toContain('e+')
+  })
+
+  it('formats a very small result as readable scientific notation', async () => {
+    mockCalculate.mockResolvedValueOnce({
+      operation: 'divide',
+      operands: [1, 3e8],
+      result: 1 / 3e8,
+    })
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('1')
+    })
+    act(() => {
+      result.current.chooseOperation('divide')
+    })
+    act(() => {
+      result.current.inputDigit('3')
+    })
+    await act(async () => {
+      await result.current.equals()
+    })
+
+    expect(result.current.display).toMatch(/^3\.333333333 × 10\^-9$/)
+    expect(result.current.isLoading).toBe(false)
+  })
+
   it('performs a unary operation immediately on the current display value', async () => {
     mockCalculate.mockResolvedValueOnce({ operation: 'sqrt', operands: [16], result: 4 })
     const { result } = renderHook(() => useCalculator())
