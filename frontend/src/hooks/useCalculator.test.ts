@@ -183,6 +183,42 @@ describe('useCalculator', () => {
     expect(result.current.display).toBe('4')
   })
 
+  it('square() calls power with the current value and a fixed exponent of 2', async () => {
+    mockCalculate.mockResolvedValueOnce({ operation: 'power', operands: [9, 2], result: 81 })
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('9')
+    })
+    await act(async () => {
+      await result.current.square()
+    })
+
+    expect(mockCalculate).toHaveBeenCalledWith({ operation: 'power', operands: [9, 2] })
+    expect(result.current.display).toBe('81')
+  })
+
+  it('square() is a no-op while a calculation is already in flight', async () => {
+    mockCalculate.mockReturnValueOnce(new Promise(() => {})) // never resolves
+    const { result } = renderHook(() => useCalculator())
+
+    act(() => {
+      result.current.inputDigit('9')
+    })
+    act(() => {
+      // Deliberately not awaited: the mock never resolves, so this just
+      // kicks off the in-flight request we want isLoading to reflect below.
+      result.current.square()
+    })
+    expect(result.current.isLoading).toBe(true)
+
+    await act(async () => {
+      await result.current.square()
+    })
+
+    expect(mockCalculate).toHaveBeenCalledOnce()
+  })
+
   it('surfaces the API error message and clears loading state on failure', async () => {
     mockCalculate.mockRejectedValueOnce(
       new CalculatorApiError('DIVISION_BY_ZERO', 'cannot divide by zero', 422),

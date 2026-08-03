@@ -62,6 +62,52 @@ describe('Calculator', () => {
     await waitFor(() => expect(screen.getByTestId('display-value')).toHaveTextContent('100'))
   })
 
+  it('squares the current value via the x² key (unary, no second operand entry)', async () => {
+    mockCalculate.mockResolvedValueOnce({ operation: 'power', operands: [9, 2], result: 81 })
+    const user = userEvent.setup()
+    render(<Calculator />)
+
+    await user.click(screen.getByTestId('key-9'))
+    await user.click(screen.getByTestId('key-square'))
+
+    await waitFor(() => expect(screen.getByTestId('display-value')).toHaveTextContent('81'))
+    expect(mockCalculate).toHaveBeenCalledWith({ operation: 'power', operands: [9, 2] })
+  })
+
+  it('squares the current value via the "^" keyboard shortcut', async () => {
+    mockCalculate.mockResolvedValueOnce({ operation: 'power', operands: [9, 2], result: 81 })
+    const user = userEvent.setup()
+    render(<Calculator />)
+
+    await user.keyboard('9^')
+
+    await waitFor(() => expect(screen.getByTestId('display-value')).toHaveTextContent('81'))
+    expect(mockCalculate).toHaveBeenCalledWith({ operation: 'power', operands: [9, 2] })
+  })
+
+  it('displays large results with thousands separators', async () => {
+    mockCalculate.mockResolvedValueOnce({
+      operation: 'multiply',
+      operands: [10000, 30],
+      result: 300000,
+    })
+    const user = userEvent.setup()
+    render(<Calculator />)
+
+    await user.click(screen.getByTestId('key-1'))
+    await user.click(screen.getByTestId('key-0'))
+    await user.click(screen.getByTestId('key-0'))
+    await user.click(screen.getByTestId('key-0'))
+    await user.click(screen.getByTestId('key-0'))
+    await user.click(screen.getByTestId('key-multiply'))
+    await user.click(screen.getByTestId('key-3'))
+    await user.click(screen.getByTestId('key-0'))
+    await user.click(screen.getByTestId('key-equals'))
+
+    await waitFor(() => expect(screen.getByTestId('display-value')).toHaveTextContent('300,000'))
+    expect(screen.getByText('10,000 × 30 = 300,000')).toBeInTheDocument()
+  })
+
   it('shows an inline error message (not a native alert) on API failure', async () => {
     mockCalculate.mockRejectedValueOnce(
       new CalculatorApiError('DIVISION_BY_ZERO', 'cannot divide by zero', 422),

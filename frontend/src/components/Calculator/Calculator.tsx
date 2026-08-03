@@ -14,7 +14,6 @@ const OPERATION_KEYS: Record<string, BinaryOperation> = {
   '-': 'subtract',
   '*': 'multiply',
   '/': 'divide',
-  '^': 'power',
   '%': 'percentage',
 }
 
@@ -26,6 +25,7 @@ interface CalculatorActions {
   chooseOperation: (operation: BinaryOperation) => void
   equals: () => void
   applySqrt: () => void
+  applySquare: () => void
 }
 
 const SIMPLE_KEY_ACTIONS: Record<string, (actions: CalculatorActions) => void> = {
@@ -35,6 +35,7 @@ const SIMPLE_KEY_ACTIONS: Record<string, (actions: CalculatorActions) => void> =
   Escape: (actions) => actions.clear(),
   r: (actions) => actions.applySqrt(),
   R: (actions) => actions.applySqrt(),
+  '^': (actions) => actions.applySquare(),
 }
 
 function handleKeyDown(event: KeyboardEvent, actions: CalculatorActions) {
@@ -85,6 +86,7 @@ export function Calculator() {
     chooseOperation,
     equals,
     applyUnary,
+    square,
   } = useCalculator()
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
@@ -98,6 +100,7 @@ export function Calculator() {
     chooseOperation: (operation) => void chooseOperation(operation),
     equals: () => void equals(),
     applySqrt: () => void applyUnary('sqrt'),
+    applySquare: () => void square(),
   }
 
   const isHistoryOpenRef = useRef(isHistoryOpen)
@@ -140,6 +143,7 @@ export function Calculator() {
           onDigit={inputDigit}
           onOperation={(operation) => void chooseOperation(operation)}
           onSqrt={() => void applyUnary('sqrt')}
+          onSquare={() => void square()}
           onEquals={() => void equals()}
           onClear={clear}
           onBackspace={backspace}

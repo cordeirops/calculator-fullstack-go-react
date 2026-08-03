@@ -8,6 +8,7 @@ import {
   type UnaryOperation,
 } from '../types/calculator'
 import { OPERATION_SYMBOLS } from '../utils/formatExpression'
+import { formatNumber } from '../utils/formatNumber'
 
 const MAX_DISPLAY_DIGITS = 15
 const MAX_HISTORY_ENTRIES = 20
@@ -44,26 +45,6 @@ function loadHistory(): HistoryEntry[] {
   } catch {
     return []
   }
-}
-
-function formatResult(value: number): string {
-  if (!Number.isFinite(value)) return 'Error'
-
-  // Number#toString() itself switches to exponential notation outside this
-  // range (e.g. 23123123123123 * 123123123123123 = 2.8469911352794057e+27),
-  // and float64 only carries ~15-17 significant digits at that magnitude
-  // anyway, so rounding to 10 *decimal places* below would be meaningless.
-  // Format the exponent ourselves instead of leaving JS's raw "e+27".
-  const magnitude = Math.abs(value)
-  if (value !== 0 && (magnitude >= 1e21 || magnitude < 1e-6)) {
-    const [mantissa, exponent] = value.toExponential(9).split('e')
-    return `${mantissa} × 10^${exponent.replace('+', '')}`
-  }
-
-  // Round away IEEE-754 noise (e.g. 0.30000000000000004) beyond a
-  // reasonable display precision, without truncating legitimate decimals.
-  const rounded = Math.round(value * 1e10) / 1e10
-  return rounded.toString()
 }
 
 function appendDigit(display: string, digit: string): string {
@@ -130,7 +111,7 @@ export function useCalculator() {
       const response = await calculate({ operation, operands })
       setState((s) => ({
         ...s,
-        display: formatResult(response.result),
+        display: formatNumber(response.result),
         storedValue: null,
         pendingOperation: null,
         overwrite: true,
@@ -185,9 +166,17 @@ export function useCalculator() {
     await runCalculation(operation, [Number(state.display)])
   }
 
+  // The keypad only exposes squaring (x²), not arbitrary exponentiation,
+  // matching a standard calculator's UI — the backend's "power" operation
+  // itself is still fully general, this just always calls it with 2.
+  async function square() {
+    if (state.isLoading) return
+    await runCalculation('power', [Number(state.display), 2])
+  }
+
   const expressionPreview =
     state.storedValue !== null && state.pendingOperation !== null
-      ? `${state.storedValue} ${OPERATION_SYMBOLS[state.pendingOperation]}`
+      ? `${formatNumber(state.storedValue)} ${OPERATION_SYMBOLS[state.pendingOperation]}`
       : null
 
   return {
@@ -201,5 +190,6 @@ export function useCalculator() {
     chooseOperation,
     equals,
     applyUnary,
+    square,
   }
 }

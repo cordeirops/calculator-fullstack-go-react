@@ -5,6 +5,7 @@ interface KeypadProps {
   onDigit: (digit: string) => void
   onOperation: (operation: BinaryOperation) => void
   onSqrt: () => void
+  onSquare: () => void
   onEquals: () => void
   onClear: () => void
   onBackspace: () => void
@@ -25,6 +26,7 @@ export function Keypad({
   onDigit,
   onOperation,
   onSqrt,
+  onSquare,
   onEquals,
   onClear,
   onBackspace,
@@ -100,7 +102,7 @@ export function Keypad({
     },
 
     // The last row: "=" fills cols 1-3 (big, right below the digit pad),
-    // "^" is pinned to col 4 so it lines up with √ ÷ × − + instead of
+    // "x²" is pinned to col 4 so it lines up with √ ÷ × − + instead of
     // sitting alone at col 1.
     {
       label: '=',
@@ -111,12 +113,12 @@ export function Keypad({
       title: 'Calculate result',
     },
     {
-      label: '^',
-      onClick: () => onOperation('power'),
+      label: 'x²',
+      onClick: onSquare,
       kind: 'operator',
-      testId: 'key-power',
+      testId: 'key-square',
       gridColumn: '4',
-      title: 'Power',
+      title: 'Square',
     },
   ]
 

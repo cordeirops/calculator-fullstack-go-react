@@ -9,6 +9,7 @@ function renderKeypad(overrides: Partial<ComponentProps<typeof Keypad>> = {}) {
     onDigit: vi.fn(),
     onOperation: vi.fn(),
     onSqrt: vi.fn(),
+    onSquare: vi.fn(),
     onEquals: vi.fn(),
     onClear: vi.fn(),
     onBackspace: vi.fn(),
@@ -44,7 +45,6 @@ describe('Keypad', () => {
     ['key-subtract', 'subtract'],
     ['key-multiply', 'multiply'],
     ['key-divide', 'divide'],
-    ['key-power', 'power'],
     ['key-percentage', 'percentage'],
   ])('calls onOperation with %s -> %s', async (testId, operation) => {
     const user = userEvent.setup()
@@ -55,11 +55,21 @@ describe('Keypad', () => {
     expect(props.onOperation).toHaveBeenCalledWith(operation)
   })
 
-  it('places = in cols 1-3 and ^ in col 4 of the last row, so = sits directly left of ^', () => {
+  it('calls onSquare (not onOperation) for the x² key, since it is unary in the UI', async () => {
+    const user = userEvent.setup()
+    const props = renderKeypad()
+
+    await user.click(screen.getByTestId('key-square'))
+
+    expect(props.onSquare).toHaveBeenCalledOnce()
+    expect(props.onOperation).not.toHaveBeenCalled()
+  })
+
+  it('places = in cols 1-3 and x² in col 4 of the last row, so = sits directly left of x²', () => {
     renderKeypad()
 
     expect(screen.getByTestId('key-equals')).toHaveStyle({ gridColumn: '1 / span 3' })
-    expect(screen.getByTestId('key-power')).toHaveStyle({ gridColumn: '4' })
+    expect(screen.getByTestId('key-square')).toHaveStyle({ gridColumn: '4' })
   })
 
   it('places % in the top utility row, alongside C, backspace and sqrt', () => {

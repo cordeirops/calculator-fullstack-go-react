@@ -14,7 +14,7 @@ describe('formatExpression', () => {
       '10 ÷ 4 = 2.5',
     )
     expect(formatExpression({ operation: 'power', operands: [2, 10], result: 1024 })).toBe(
-      '2 ^ 10 = 1024',
+      '2 ^ 10 = 1,024',
     )
   })
 
@@ -26,5 +26,21 @@ describe('formatExpression', () => {
 
   it('formats sqrt as a unary expression', () => {
     expect(formatExpression({ operation: 'sqrt', operands: [144], result: 12 })).toBe('√144 = 12')
+  })
+
+  it('adds thousands separators to operands and the result', () => {
+    expect(formatExpression({ operation: 'multiply', operands: [10000, 30], result: 300000 })).toBe(
+      '10,000 × 30 = 300,000',
+    )
+  })
+
+  it('renders a huge result in the same readable scientific notation as the display', () => {
+    expect(
+      formatExpression({
+        operation: 'multiply',
+        operands: [23123123123123, 123123123123123],
+        result: 2.8469911352794057e27,
+      }),
+    ).toBe('23,123,123,123,123 × 123,123,123,123,123 = 2.846991135 × 10^27')
   })
 })
